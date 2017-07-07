@@ -42,7 +42,6 @@ type Props = {
   headerMode: HeaderMode,
   headerComponent?: ReactClass<*>,
   mode: 'card' | 'modal',
-  navigation: NavigationScreenProp<NavigationState, NavigationAction>,
   router: NavigationRouter<
     NavigationState,
     NavigationAction,
@@ -72,24 +71,24 @@ type Props = {
  * The actual duration should be always less then that because the rest distance 
  * is always less then the full distance of the layout.
  */
-const ANIMATION_DURATION = 250;
+const ANIMATION_DURATION = 500;
 
 /**
  * The gesture distance threshold to trigger the back behavior. For instance,
- * `1 / 3` means that moving greater than 1 / 3 of the width of the screen will
+ * `1/2` means that moving greater than 1/2 of the width of the screen will
  * trigger a back action
  */
-const POSITION_THRESHOLD = 1 / 3;
+const POSITION_THRESHOLD = 1 / 2;
 
 /**
  * The threshold (in pixels) to start the gesture action.
  */
-const RESPOND_THRESHOLD = 12;
+const RESPOND_THRESHOLD = 20;
 
 /**
  * The distance of touch start from the edge of the screen where the gesture will be recognized
  */
-const GESTURE_RESPONSE_DISTANCE_HORIZONTAL = 35;
+const GESTURE_RESPONSE_DISTANCE_HORIZONTAL = 25;
 const GESTURE_RESPONSE_DISTANCE_VERTICAL = 135;
 
 const animatedSubscribeValue = (animatedValue: Animated.Value) => {
@@ -202,7 +201,7 @@ class CardStack extends Component {
     Animated.timing(this.props.position, {
       toValue: resetToIndex,
       duration,
-      easing: Easing.inOut(Easing.ease),
+      easing: Easing.linear(),
       useNativeDriver: this.props.position.__isNative,
     }).start();
   }
@@ -218,7 +217,7 @@ class CardStack extends Component {
     Animated.timing(position, {
       toValue,
       duration,
-      easing: Easing.inOut(Easing.ease),
+      easing: Easing.linear(),
       useNativeDriver: position.__isNative,
     }).start(() => {
       this._immediateIndex = null;
@@ -276,7 +275,7 @@ class CardStack extends Component {
         const gestureResponseDistance = isVertical
           ? GESTURE_RESPONSE_DISTANCE_VERTICAL
           : GESTURE_RESPONSE_DISTANCE_HORIZONTAL;
-        // GESTURE_RESPONSE_DISTANCE is about 30 or 35. Or 135 for modals
+        // GESTURE_RESPONSE_DISTANCE is about 25 or 30. Or 135 for modals
         if (screenEdgeDistance > gestureResponseDistance) {
           // Reject touches that started in the middle of the screen
           return false;
@@ -321,10 +320,10 @@ class CardStack extends Component {
         const axisDistance = isVertical
           ? layout.height.__getValue()
           : layout.width.__getValue();
-        const movedDistance = gesture[isVertical ? 'moveY' : 'moveX'];
-        const defaultVelocity = axisDistance / ANIMATION_DURATION;
+        const movedDistance = gesture[isVertical ? 'dy' : 'dx'];
         const gestureVelocity = gesture[isVertical ? 'vy' : 'vx'];
-        const velocity = Math.max(gestureVelocity, defaultVelocity);
+        const defaultVelocity = axisDistance / ANIMATION_DURATION;
+        const velocity = Math.max(Math.abs(gestureVelocity), defaultVelocity);
         const resetDuration = movedDistance / velocity;
         const goBackDuration = (axisDistance - movedDistance) / velocity;
 
@@ -358,9 +357,13 @@ class CardStack extends Component {
       : Platform.OS === 'ios';
 
     const handlers = gesturesEnabled ? responder.panHandlers : {};
+    const containerStyle = [
+      styles.container,
+      this._getTransitionConfig().containerStyle,
+    ];
 
     return (
-      <View {...handlers} style={styles.container}>
+      <View {...handlers} style={containerStyle}>
         <View style={styles.scenes}>
           {scenes.map((s: *) => this._renderCard(s))}
         </View>
@@ -409,16 +412,20 @@ class CardStack extends Component {
     );
   }
 
-  _renderCard = (scene: NavigationScene): React.Element<*> => {
+  _getTransitionConfig = () => {
     const isModal = this.props.mode === 'modal';
 
     /* $FlowFixMe */
-    const { screenInterpolator } = TransitionConfigs.getTransitionConfig(
+    return TransitionConfigs.getTransitionConfig(
       this.props.transitionConfig,
       {},
       {},
       isModal
     );
+  };
+
+  _renderCard = (scene: NavigationScene): React.Element<*> => {
+    const { screenInterpolator } = this._getTransitionConfig();
     const style =
       screenInterpolator && screenInterpolator({ ...this.props, scene });
 

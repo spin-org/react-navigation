@@ -1,7 +1,7 @@
 /* @flow */
 
 import React from 'react';
-import invariant from 'fbjs/lib/invariant';
+import invariant from './utils/invariant';
 import { BackAndroid, Linking } from './PlatformHelpers';
 import NavigationActions from './NavigationActions';
 import addNavigationHelpers from './addNavigationHelpers';
@@ -92,7 +92,7 @@ export default function createNavigationContainer<T: *>(
       const params = {};
       const delimiter = this.props.uriPrefix || '://';
       let path = url.split(delimiter)[1];
-      if (!path) {
+      if (typeof path === 'undefined') {
         path = url;
       }
       return {
