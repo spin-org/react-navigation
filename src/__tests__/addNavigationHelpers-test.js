@@ -5,19 +5,12 @@ import addNavigationHelpers from '../addNavigationHelpers';
 
 describe('addNavigationHelpers', () => {
   it('handles Back action', () => {
-    const mockedDispatch = jest
-      .fn(() => false)
-      .mockImplementationOnce(() => true);
-    expect(
-      addNavigationHelpers({
-        state: { key: 'A', routeName: 'Home' },
-        dispatch: mockedDispatch,
-      }).goBack('A')
-    ).toEqual(true);
-    expect(mockedDispatch).toBeCalledWith({
-      type: NavigationActions.BACK,
-      key: 'A',
-    });
+    const mockedDispatch = jest.fn(() => false).mockImplementationOnce(() => true);
+    expect(addNavigationHelpers({
+      state: { key: 'A', routeName: 'Home' },
+      dispatch: mockedDispatch,
+    }).goBack({ key: 'A' })).toEqual(true);
+    expect(mockedDispatch).toBeCalledWith({ type: NavigationActions.BACK, key: 'A' });
     expect(mockedDispatch.mock.calls.length).toBe(1);
   });
 
