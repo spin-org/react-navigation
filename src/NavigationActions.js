@@ -22,10 +22,11 @@ const RESET = 'Navigation/RESET';
 const SET_PARAMS = 'Navigation/SET_PARAMS';
 const URI = 'Navigation/URI';
 
-const back = (payload: { key?: ?string } = {}): NavigationBackAction => ({
-  type: BACK,
-  key: payload.key,
+const createAction = (type: string) => (payload: Object = {}) => ({
+  type,
+  ...payload,
 });
+const back = createAction(BACK);
 const init = (
   payload: { params?: NavigationParams } = {}
 ): NavigationInitAction => {
