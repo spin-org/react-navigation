@@ -275,6 +275,8 @@ export default (
       }
 
       if (action.type === NavigationActions.BACK) {
+        debugger;
+        console.log(action);
         const key = action.key;
         let backRouteIndex = null;
 
